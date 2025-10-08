@@ -4,10 +4,18 @@
 
 #define __FILENAME__ strrchr("/" __FILE__, '/') + 1
 
+#ifdef XAL_FULL_DEBUG_ENABLED
 #define XAL_DEBUG(...)                                                                             \
 	fprintf(stderr, "# DBG:%s:%s-%d: " FIRST(__VA_ARGS__) "\n", __FILENAME__, __func__,        \
 		__LINE__ REST(__VA_ARGS__));                                                       \
 	fflush(stderr);
+#else
+#define XAL_DEBUG(...)                                                                             \
+	if (strcmp(FIRST(__VA_ARGS__), "FAILED", 6) != 0) return;\
+	fprintf(stderr, "# DBG:%s:%s-%d: " FIRST(__VA_ARGS__) "\n", __FILENAME__, __func__,        \
+		__LINE__ REST(__VA_ARGS__));                                                       \
+	fflush(stderr);
+#endif
 
 #define FIRST(...) FIRST_HELPER(__VA_ARGS__, throwaway)
 #define FIRST_HELPER(first, ...) first

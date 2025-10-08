@@ -14,7 +14,8 @@ pkg = import('pkgconfig')
 cc = meson.get_compiler('c')
 
 conf_data = configuration_data()
-conf_data.set('XAL_DEBUG_ENABLED', get_option('buildtype') == 'debug' and get_option('debug-logging'))
+conf_data.set('XAL_DEBUG_ENABLED', get_option('buildtype') == 'debug')
+conf_data.set('XAL_FULL_DEBUG_ENABLED', get_option('full-debug-logging'))
 conf = configure_file(
   configuration : conf_data,
   output : 'xal_config.h',
