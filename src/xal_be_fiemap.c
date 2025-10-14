@@ -19,8 +19,29 @@
 #include <xal_odf.h>
 #include <xal_pool.h>
 
+struct xal_be_fiemap {
+	struct xal_backend_base base;
+	char *mountpoint;      ///< Path to mountpoint of dev
+
+	uint8_t _rsvd[32];
+};
+XAL_STATIC_ASSERT(sizeof(struct xal_be_fiemap) == XAL_BACKEND_SIZE, "Incorrect size");
+
 int
 process_ino_fiemap(struct xal *xal, char *path, struct xal_inode *self);
+
+int
+xal_index_fiemap(struct xal *xal);
+
+void
+close_be_fiemap(void *be_ptr)
+{
+	struct xal_be_fiemap *be = (struct xal_be_fiemap *)be_ptr; 
+
+	free(be->mountpoint);
+
+	return;
+}
 
 bool
 _is_directory_member(char *name)
@@ -89,6 +110,7 @@ xal_open_be_fiemap(struct xal **xal, char *mountpoint)
 {
 	struct xal *cand;
 	struct stat sb;
+	struct xal_be_fiemap *be;
 	int nallocated, err;
 
 	if (!mountpoint) {
@@ -102,18 +124,33 @@ xal_open_be_fiemap(struct xal **xal, char *mountpoint)
 		return -errno;
 	}
 
-	strcpy(cand->mountpoint, mountpoint);
+	be = (struct xal_be_fiemap *)&cand->be;
 
-	nallocated = retrieve_total_entries(cand->mountpoint);
-	if (nallocated < 0) {
-		XAL_DEBUG("Failed: retrieve_total_entries()");
-		return nallocated;
+	be->base.type = XAL_BACKEND_FIEMAP;
+	be->base.close = close_be_fiemap;
+	be->base.index = xal_index_fiemap;
+
+	be->mountpoint = calloc(strlen(mountpoint), sizeof(char));
+	if (!be->mountpoint) {
+		XAL_DEBUG("FAILED: calloc(); errno(%d)", errno);
+		err = -errno;
+		goto failed;
 	}
 
-	err = stat(cand->mountpoint, &sb);
+	strcpy(be->mountpoint, mountpoint);
+
+	nallocated = retrieve_total_entries(be->mountpoint);
+	if (nallocated < 0) {
+		XAL_DEBUG("Failed: retrieve_total_entries()");
+		err = nallocated;
+		goto failed;
+	}
+
+	err = stat(be->mountpoint, &sb);
 	if (err) {
-		XAL_DEBUG("FAILED: stat(%s); errno(%d)", cand->mountpoint, errno);
-		return -errno;
+		XAL_DEBUG("FAILED: stat(%s); errno(%d)", be->mountpoint, errno);
+		err = -errno;
+		goto failed;
 	}
 
 	cand->sb.blocksize = sb.st_blksize;
@@ -387,9 +424,10 @@ process_ino_fiemap(struct xal *xal, char *path, struct xal_inode *self)
 int
 xal_index_fiemap(struct xal *xal)
 {
+	struct xal_be_fiemap *be = (struct xal_be_fiemap *)&xal->be;
 	int err;
 
-	if (!strlen(xal->mountpoint)) {
+	if (!strlen(be->mountpoint)) {
 		XAL_DEBUG("FAILED: xal object has no mountpoint");
 		return -EINVAL;
 	}
@@ -406,5 +444,5 @@ xal_index_fiemap(struct xal *xal)
 	xal->root->content.extents.count = 0;
 	xal->root->content.dentries.count = 0;
 
-	return process_ino_fiemap(xal, xal->mountpoint, xal->root);
+	return process_ino_fiemap(xal, be->mountpoint, xal->root);
 }

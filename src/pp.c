@@ -53,9 +53,11 @@ xal_pp(struct xal *xal)
 	wrtn += printf("  sb.agcount: %" PRIu32 "\n", xal->sb.agcount);
 	wrtn += printf("  sb.dirblocksize: %" PRIu32 "\n", xal->sb.dirblocksize);
 
+	/*
 	for (uint32_t i = 0; i < xal->sb.agcount; ++i) {
 		wrtn += xal_ag_pp(&xal->ags[i]);
 	}
+	*/
 
 	return wrtn;
 }
