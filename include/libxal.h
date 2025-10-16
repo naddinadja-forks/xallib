@@ -264,6 +264,17 @@ int
 xal_walk(struct xal *xal, struct xal_inode *inode, xal_walk_cb cb_func, void *cb_data);
 
 /**
+ * If the file system is mounted, validate that no breaking changes have been made to the files.
+ * If the xal struct was not opened with backend "fiemap", the call will always result in a 
+ * success.
+ * 
+ * @returns 0 on success, meaning that no breaking changes was found to the file system, 1 
+ * otherwise. On error, negative errno is returned to indicate the error.
+ */
+int
+xal_validate(struct xal *xal);
+
+/**
  * Decodes the given inode number in AG-Relative Inode number format
  *
  * For details on the format then see the description in section "13.3.1 Inode Numbers"

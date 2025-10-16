@@ -27,5 +27,6 @@ struct xal {
 	struct xal_pool extents; ///< Pool of extents in host-native format
 	struct xal_inode *root;	 ///< Root of the file-system
 	struct xal_sb sb;
+	bool dirty;              ///< Whether the file system has changed since last index. See xal_validate()
 	uint8_t be[XAL_BACKEND_SIZE];
 };
