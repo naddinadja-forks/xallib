@@ -53,6 +53,12 @@ struct xal_extent {
 int
 xal_extent_pp(struct xal_extent *extent);
 
+struct xal_extent
+xal_extent_in_bytes(struct xal *xal, struct xal_extent *extent);
+
+struct xal_extent
+xal_extent_in_blocks(struct xal *xal, struct xal_extent *extent);
+
 struct xal_inode;
 
 struct xal_dentries {
