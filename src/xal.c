@@ -64,7 +64,7 @@ xal_close(struct xal *xal)
 	xal_pool_unmap(&xal->extents);
 
 	be = (struct xal_backend_base *)&xal->be;
-	be->close(be);
+	be->close(xal);
 
 	free(xal);
 }
@@ -153,6 +153,10 @@ xal_open(struct xnvme_dev *dev, struct xal **xal, struct xal_opts *opts)
 			XAL_DEBUG("FAILED: Unexpected backend(%d)", opts->be);
 			return -EINVAL;
 	}
+
+	(*xal)->dev = dev;
+
+	return 0;
 }
 
 int

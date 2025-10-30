@@ -172,15 +172,17 @@ xal_ino_decode_absolute_offset(struct xal *xal, uint64_t ino)
 }
 
 void
-xal_be_xfs_close(void *be_ptr)
+xal_be_xfs_close(struct xal *xal)
 {
-	struct xal_be_xfs *be = (struct xal_be_xfs *)be_ptr;
+	struct xal_be_xfs *be;
 
-	if (!be) {
+	if (!xal) {
 		return;
 	}
 
-	xnvme_buf_free(be->dev, be->buf);
+	be = (struct xal_be_xfs *)xal->be;
+
+	xnvme_buf_free(xal->dev, be->buf);
 	kh_destroy(ino_to_dinode, be->dinodes_map);
 	free(be->dinodes);
 }
@@ -703,7 +705,6 @@ xal_be_xfs_open(struct xnvme_dev *dev, struct xal **xal)
 	be->base.close = xal_be_xfs_close;
 	be->base.index = xal_be_xfs_index;
 
-	be->dev = dev;
 	be->buf = buf;
 
 	for (uint32_t seqno = 0; seqno < cand->sb.agcount; ++seqno) {
