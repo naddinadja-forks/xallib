@@ -51,5 +51,9 @@ test-using-zram:
 unit-test:
 	meson test -C $(BUILDDIR) --suite unit
 
+.PHONY: integration-test
+integration-test:
+	meson test -C $(BUILDDIR) --suite integration
+
 .PHONY: test
 test: test-using-loop
