@@ -1,4 +1,7 @@
-test_sources = []
+test_sources = [
+  'test_pool.c',
+  'test_pool_shm.c',
+]
 
 foreach src : test_sources
   name = src.split('.')[0]
