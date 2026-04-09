@@ -75,6 +75,7 @@ xal_cli = executable('xal',
 )
 
 subdir('tools')
+subdir('tests')
 
 pkg.generate(xal_library)
 
